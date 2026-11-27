@@ -13,6 +13,13 @@
 | 부하 생성기 | 동작 확인 완료. 초당 30건 30초에서 원본 주문 1,051행과 CDC 토픽 고유 주문 1,051개 일치 |
 | 실험 | 계획 완료, 결과 0건 |
 
+## BE-commerce와 저장소를 나눈 이유
+
+- 결제 서비스와 데이터 플랫폼은 대개 다른 팀이 맡고, 데이터 쪽은 원천 스키마를 바꾸지 못한 채 읽어 갑니다. 이 저장소는 그 제약을 그대로 둡니다. BE-commerce에서 스키마를 가져오기만 하고 BE-commerce 코드는 고치지 않습니다.
+- 둘 사이의 계약은 원본 MySQL 스키마 하나입니다. 어느 커밋의 스키마인지 `ed3757d`로 고정해 두어 BE-commerce가 바뀌어도 이 저장소의 실험 결과가 모르는 사이에 달라지지 않습니다. 출처와 뺀 열은 [docs/source-schema.md](docs/source-schema.md)에 있습니다.
+- 실행 환경이 다릅니다. BE-commerce는 Java와 Gradle, 이 저장소는 compose 프로필 위의 Debezium · Kafka · Flink · Airflow · Iceberg · Trino입니다. 한 저장소에 두면 CI와 실행 안내가 서로를 끌고 다닙니다.
+- 대가는 원본이 바뀐 것을 저절로 알지 못한다는 점입니다. 고정 커밋을 올릴 때는 그사이 마이그레이션 가운데 가져온 표 9개를 건드린 것을 `docs/source-schema.md` 표에 적고 같은 PR에서 `compose/init/mysql/01_schema.sql`을 고칩니다.
+
 ## 장 구성
 
 | 장 | 출발점이 되는 문제 | 공부하는 것 | 실험 수 |
